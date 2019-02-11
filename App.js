@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { TouchableOpacity, FlatList, StyleSheet, Button, Text, View } from 'react-native';
+import { TouchableOpacity, SafeAreaView, FlatList, StyleSheet, Button, Text, View } from 'react-native';
 import StepIndicator from 'react-native-step-indicator';
 
 const labels = ["Cart", "Delivery Address", "Order Summary", "Payment Method", "Track"];
@@ -41,9 +41,12 @@ class MyListItem extends React.PureComponent {
     const textColor = this.props.selected ? 'white' : 'gray';
     return (
       <TouchableOpacity onPress={this._onPress}>
-        <View>
-          <Text style={{ color: textColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ flex: 1, color: textColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
             {this.props.text}
+          </Text>
+          <Text style={{ color: textColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
+            >
           </Text>
         </View>
       </TouchableOpacity>
@@ -57,19 +60,26 @@ export default class App extends Component {
     data: content[0],
     currentPosition: 0,
     selected: {}
-  }  
+  }
 
   _keyExtractor = (item, index) => index.toString();
 
-  _renderItem({ item, index }) {   
-    let selected = this.state.selected[index].selected;        
+  _renderItem({ item, index }) {
+
+    let currentPos = this.state.currentPosition;
+    let selected = this.state.selected[currentPos] ? this.state.selected[currentPos].index === index : false;
+
     return (
       <MyListItem
         selected={selected}
-        onPressItem={() => {                    
-          this.state.selected[index].selected = true;
-          this.state.selected[index].text = item;
+        onPressItem={() => {
+          if (!this.state.selected[currentPos]) {
+            this.state.selected[currentPos] = {};
+          }
+          this.state.selected[currentPos].index = index;
+          this.state.selected[currentPos].text = item;
           this.setState({ selected: this.state.selected });
+          this.onPageChange(this.state.currentPosition + 1);
         }}
         text={item} />
     )
@@ -77,7 +87,7 @@ export default class App extends Component {
 
   render() {
     return (
-      <View style={{ padding: 10, flex: 1, justifyContent: 'space-between' }}>
+      <SafeAreaView style={{ backgroundColor: 'white', padding: 10, flex: 1, justifyContent: 'space-between' }}>
         <StepIndicator
           customStyles={customStyles}
           currentPosition={this.state.currentPosition}
@@ -89,35 +99,47 @@ export default class App extends Component {
           keyExtractor={this._keyExtractor}
           renderItem={this._renderItem.bind(this)}
         />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1, marginRight: 10 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopColor: 'gray', borderTopWidth: 0.5, alignItems: 'center', }}>
+          <View style={{ flex: 1, marginRight: 10, justifyContent: 'center', aligItems: 'center', }}>
             <Button
               onPress={() => { this.onPageChange(this.state.currentPosition - 1) }}
               title="Anterior"
               color="#841584"
               accessibilityLabel="Anterior"
             />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Button
-              onPress={() => { this.onPageChange(this.state.currentPosition + 1) }}
-              title="Próximo"
-              color="#841584"
-              accessibilityLabel="Próximo"
-            />
-          </View>
+          </View>          
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 
-  onPageChange(position) {
+  onPageChange(position) {    
     if (position < 0 || position > labels.length) {
       return;
     }
+    if (position == labels.length) {
+      alert('Compartilhar');
+      return;
+    }    
     this.setState({ currentPosition: position, data: content[position] });
   }
+}
 
+finalize() {
+  Alert.alert(
+    'Finalizar',
+    'Enviar seu pedido?',
+    [
+      {text: '', onPress: () => console.log('Ask me later pressed')},
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {text: 'OK', onPress: () => console.log('OK Pressed')},
+    ],
+    {cancelable: false},
+  );
 }
 
 const styles = StyleSheet.create({
