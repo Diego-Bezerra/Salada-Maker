@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { TouchableOpacity, SafeAreaView, FlatList, StyleSheet, Button, Text, View } from 'react-native';
+import { StatusBar, Alert, TouchableOpacity, SafeAreaView, FlatList, StyleSheet, Button, Text, View } from 'react-native';
 import StepIndicator from 'react-native-step-indicator';
 
 const labels = ["Cart", "Delivery Address", "Order Summary", "Payment Method", "Track"];
@@ -39,13 +39,14 @@ class MyListItem extends React.PureComponent {
   render() {
     const backColor = this.props.selected ? '#841584' : 'transparent';
     const textColor = this.props.selected ? 'white' : 'gray';
+    const arrowColor = this.props.selected ? 'white' : '#fe7013';    
     return (
       <TouchableOpacity onPress={this._onPress}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={{ flex: 1, color: textColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
             {this.props.text}
           </Text>
-          <Text style={{ color: textColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
+          <Text style={{ color: arrowColor, backgroundColor: backColor, fontWeight: 'bold', fontSize: 20, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
             >
           </Text>
         </View>
@@ -59,7 +60,8 @@ export default class App extends Component {
   state = {
     data: content[0],
     currentPosition: 0,
-    selected: {}
+    selected: {},
+    nextText: 'Próximo'
   }
 
   _keyExtractor = (item, index) => index.toString();
@@ -87,19 +89,22 @@ export default class App extends Component {
 
   render() {
     return (
-      <SafeAreaView style={{ backgroundColor: 'white', padding: 10, flex: 1, justifyContent: 'space-between' }}>
-        <StepIndicator
-          customStyles={customStyles}
-          currentPosition={this.state.currentPosition}
-          labels={labels}
-        />
+      <SafeAreaView style={{ backgroundColor: 'white', flex: 1, justifyContent: 'space-between' }}>
+        <StatusBar backgroundColor="#841584" barStyle="light-content" />
+        <View style={{ paddingTop: 10, paddingLeft: 10, paddingRight: 10 }}>
+          <StepIndicator
+            customStyles={customStyles}
+            currentPosition={this.state.currentPosition}
+            labels={labels}
+          />
+        </View>
         <FlatList
           data={this.state.data}
           extraData={this.state}
           keyExtractor={this._keyExtractor}
           renderItem={this._renderItem.bind(this)}
         />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopColor: 'gray', borderTopWidth: 0.5, alignItems: 'center', }}>
+        <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between', borderTopColor: 'gray', borderTopWidth: 1, alignItems: 'center', }}>
           <View style={{ flex: 1, marginRight: 10, justifyContent: 'center', aligItems: 'center', }}>
             <Button
               onPress={() => { this.onPageChange(this.state.currentPosition - 1) }}
@@ -107,39 +112,54 @@ export default class App extends Component {
               color="#841584"
               accessibilityLabel="Anterior"
             />
-          </View>          
+          </View>
+          <View style={{ flex: 1, justifyContent: 'center', aligItems: 'center', }}>
+            <Button
+              onPress={() => { this.onPageChange(this.state.currentPosition + 1) }}
+              title={this.state.nextText}
+              color="#841584"
+              accessibilityLabel="Próximo"
+            />
+          </View>
         </View>
       </SafeAreaView>
     )
   }
 
-  onPageChange(position) {    
-    if (position < 0 || position > labels.length) {
+  onPageChange(position) {
+    let nextButtonText = 'Próximo';
+    if (position < 0 || position > labels.length + 1) {
       return;
     }
     if (position == labels.length) {
-      alert('Compartilhar');
+      nextButtonText = 'Finalizar';
+    }
+    if (position == labels.length + 1) {
+      this.finalize();
       return;
-    }    
-    this.setState({ currentPosition: position, data: content[position] });
+    }
+    this.setState({ nextText: nextButtonText, currentPosition: position, data: content[position] });
+  }
+
+  finalize() {
+    Alert.alert(
+      'Finalizar',
+      'Enviar seu pedido?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ],
+      { cancelable: false },
+    );
   }
 }
 
-finalize() {
-  Alert.alert(
-    'Finalizar',
-    'Enviar seu pedido?',
-    [
-      {text: '', onPress: () => console.log('Ask me later pressed')},
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {text: 'OK', onPress: () => console.log('OK Pressed')},
-    ],
-    {cancelable: false},
-  );
+createSaladText() {
+  
 }
 
 const styles = StyleSheet.create({
