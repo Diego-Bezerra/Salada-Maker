@@ -9,6 +9,7 @@
   "dependencies": {
     "react": "16.6.3",
     "react-native": "0.58.4",
+    "react-native-simple-toast": "0.0.8",
     "react-native-step-indicator": "0.0.9"
   },
   "devDependencies": {

@@ -17,7 +17,7 @@ export default class MyListItem extends PureComponent {
         return (
             <TouchableOpacity onPress={this._onPress}>
                 <View style={[styles.itemContainer, { backgroundColor: backColor }]}>
-                    <Text style={styles.titleText}>
+                    <Text style={[styles.titleText, { color: textColor }]}>
                         {this.props.title}
                     </Text>
                     {subTitle}

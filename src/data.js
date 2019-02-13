@@ -20,12 +20,12 @@ export default saladData = [
         description: 'Proteína',
         validate: true,
         list: [
-            { id: 0, title: 'Atum', subTitle: '', priceSmall: 9.99, priceBig: 17.99 },
-            { id: 2, title: 'Camarão', priceSmall: 14.99, priceBig: 27.99 },
-            { id: 3, title: 'Frango', priceSmall: 9.99, priceBig: 17.99 },
-            { id: 4, title: 'Sardinha', priceSmall: 8.99, priceBig: 16.99 },
-            { id: 5, title: 'Soja', priceSmall: 7.99, priceBig: 13.99 },
-            { id: 6, title: 'Ovos', priceSmall: 7.99, priceBig: 12.99 }
+            { id: 0, title: 'Atum', subTitle: 'R$ ', priceSmall: 9.99, priceBig: 17.99 },
+            { id: 2, title: 'Camarão', subTitle: 'R$ ', priceSmall: 14.99, priceBig: 27.99 },
+            { id: 3, title: 'Frango', subTitle: 'R$ ', priceSmall: 9.99, priceBig: 17.99 },
+            { id: 4, title: 'Sardinha', subTitle: 'R$ ', priceSmall: 8.99, priceBig: 16.99 },
+            { id: 5, title: 'Soja', subTitle: 'R$ ', priceSmall: 7.99, priceBig: 13.99 },
+            { id: 6, title: 'Ovos', subTitle: 'R$ ', priceSmall: 7.99, priceBig: 12.99 }
         ]
     },
     {
@@ -128,12 +128,17 @@ export default saladData = [
 
 export const StepEnum = {
     SIZE: 0,
-    PROTEIN: 2,
-    INGREDIENTS: 3,
-    SAUCE: 4,
-    GRAIN: 5,
-    SEEDS: 6,
-    GREEN_SMELL: 7,
-    ADDITIONAL: 8,
+    PROTEIN: 1,
+    INGREDIENTS: 2,
+    SAUCE: 3,
+    GRAIN: 4,
+    SEEDS: 5,
+    GREEN_SMELL: 6,
+    ADDITIONAL: 7,
+}
+
+export const PortionEnum = {
+    SMALL: 0,
+    BIG: 1    
 }
 
