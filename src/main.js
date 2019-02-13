@@ -1,184 +1,65 @@
 import React, { Component } from 'react';
 import { StatusBar, Alert, TouchableOpacity, SafeAreaView, FlatList, StyleSheet, Button, Text, View } from 'react-native';
 import StepIndicator from 'react-native-step-indicator';
-import saladData from './data';
+import SaladData, { StepEnum } from './data';
 import MyListItem from './myListItem';
+import Colors from './resources/colors';
 
-const bigIndex = 0;
-const smallIndex = 1;
-const values = Object.values(saladData);
-const stepLabels = values.map((item) => { return item.description });
-
-const customStyles = {
-    stepIndicatorSize: 25,
-    currentStepIndicatorSize: 30,
-    separatorStrokeWidth: 2,
-    currentStepStrokeWidth: 3,
-    stepStrokeCurrentColor: '#fe7013',
-    stepStrokeWidth: 3,
-    stepStrokeFinishedColor: '#fe7013',
-    stepStrokeUnFinishedColor: '#aaaaaa',
-    separatorFinishedColor: '#fe7013',
-    separatorUnFinishedColor: '#aaaaaa',
-    stepIndicatorFinishedColor: '#fe7013',
-    stepIndicatorUnFinishedColor: '#ffffff',
-    stepIndicatorCurrentColor: '#ffffff',
-    stepIndicatorLabelFontSize: 13,
-    currentStepIndicatorLabelFontSize: 13,
-    stepIndicatorLabelCurrentColor: '#fe7013',
-    stepIndicatorLabelFinishedColor: '#ffffff',
-    stepIndicatorLabelUnFinishedColor: '#aaaaaa',
-    labelColor: 'white',
-    labelSize: 0,
-    currentStepLabelColor: 'white'
-}
+const stepLabels = SaladData.map((item) => { return item.description });
 
 export default class Main extends Component {
 
     state = {
-        listData: saladData.size.list,
-        currentPosition: 0,
-        selected: {},
+        listData: SaladData[StepEnum.SIZE].list,
+        currentPosition: StepEnum.SIZE,
+        selected: [],
         nextText: 'Próximo',
         total: 0
     }
 
-    getListData(currentPosition) {
-        let data = this.getDataByPosition(currentPosition);
-        return data ? this.getDataByPosition(currentPosition).list : null;
-    }
-
     getResult() {
-        if (this.state.currentPosition !== 8) {
-            return <FlatList
-                data={this.state.listData}
-                extraData={this.state}
-                keyExtractor={this.keyExtractor}
-                renderItem={this.renderItem.bind(this)}
-            />
+        if (this.state.currentPosition !== SaladData.length) {
+            return (
+                <FlatList
+                    data={this.state.listData}
+                    extraData={this.state}
+                    keyExtractor={this.keyExtractor}
+                    renderItem={this.renderItem.bind(this)}
+                />
+            )
         } else {
-
-            let selected = Object.values(this.state.selected);
-            selected.map((step) => {
-                let vals = Object.keys(step);
-                let items = vals.filter((item) => { return item === true ? item : null; });
-                alert(JSON.stringify(items));
-            });
-
             return <Text style={{ flex: 1 }}>Anaguas</Text>
         }
 
     }
 
-    getDataByPosition(currentPosition) {
-        switch (currentPosition) {
-            case saladData.size.step:
-                return saladData.size;
-            case saladData.ingredients.step:
-                return saladData.ingredients;
-            case saladData.sauce.step:
-                return saladData.sauce;
-            case saladData.grain.step:
-                return saladData.grain;
-            case saladData.protein.step:
-                return saladData.protein;
-            case saladData.seeds.step:
-                return saladData.seeds;
-            case saladData.greenSmell.step:
-                return saladData.greenSmell;
-            case saladData.additional.step:
-                return saladData.additional;
-
-            default:
-                return null;
-                break;
-        }
-    }
-
-    selectedSizeByPosition(currentPos) {
-        let selected = this.state.selected;
-        return Object.values(selected[currentPos]).filter((item) => { return item == true }).length;
-    }
-
     getAmountText() {
-        let data = this.getDataByPosition(this.state.currentPosition);
-        return data ? 'Escolha no máximo: ' + data.amount : '';
+        let currentPosition = this.state.currentPosition;
+        return 'Escolha no máximo: ' + SaladData[currentPosition].amount;
     }
 
     getTitleComponent() {
-        let title = stepLabels[this.state.currentPosition];
-        if (!title) {
-            title = 'Confira o Pedido';
-            return <View><Text style={{ fontSize: 25, fontWeight: 'bold', color: 'black' }}>{title}</Text></View>
+        let currentPosition = this.state.currentPosition;
+        let title = SaladData[this.state.currentPosition].description;
+        if (currentPosition !== SaladData.length) {
+            let amount = this.getAmountText();
+            return (
+                <View>
+                    <Text style={styles.titleText}>{title}</Text>
+                    <Text style={styles.subTitleText}>{amount}</Text>
+                </View>
+            )
+        } else {
+            return (
+                <View>
+                    <Text style={styles.titleText}>{title}</Text>
+                </View>
+            )
         }
-
-        let amount = this.getAmountText();
-        return <View><Text style={{ fontSize: 25, fontWeight: 'bold', color: 'black' }}>{title}</Text>
-            <Text style={{ color: 'gray', fontSize: 13, }}>{amount}</Text></View>
     }
 
-    keyExtractor = (item, index) => index.toString();
-
-    renderItem({ item, index }) {
-
-        return (
-            <MyListItem />
-        );
-        
-    }
-
-    render() {
-        return (
-            <SafeAreaView style={{ backgroundColor: 'white', flex: 1, justifyContent: 'space-between' }}>
-                <StatusBar backgroundColor="#841584" barStyle="light-content" />
-                <View style={{ paddingTop: 10, paddingLeft: 10, paddingRight: 10 }}>
-                    <StepIndicator
-                        stepCount={8}
-                        customStyles={customStyles}
-                        currentPosition={this.state.currentPosition}
-                        labels={stepLabels}
-                    />
-                </View>
-                <View style={{ paddingVertical: 10, paddingHorizontal: 8, borderBottomColor: '#fe7013', borderBottomWidth: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {this.getTitleComponent()}
-                    <Text style={{ fontSize: 18, color: 'black' }}>{'Total: R$: ' + this.state.total.toFixed(2)}</Text>
-                </View>
-                {this.getResult()}
-                <View style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between', borderTopColor: '#fe7013', borderTopWidth: 1, alignItems: 'center', }}>
-                    <View style={{ flex: 1, marginRight: 10, justifyContent: 'center', aligItems: 'center', }}>
-                        <Button
-                            onPress={() => { this.onPageChange(this.state.currentPosition - 1) }}
-                            title="Anterior"
-                            color="#841584"
-                            accessibilityLabel="Anterior"
-                        />
-                    </View>
-                    <View style={{ flex: 1, justifyContent: 'center', aligItems: 'center', }}>
-                        <Button
-                            onPress={() => { this.onPageChange(this.state.currentPosition + 1) }}
-                            title={this.state.nextText}
-                            color="#841584"
-                            accessibilityLabel="Próximo"
-                        />
-                    </View>
-                </View>
-            </SafeAreaView>
-        )
-    }
-
-    onPageChange(position) {
-        let nextButtonText = 'Próximo';
-        if (position < 0 || position > stepLabels.length + 1) {
-            return;
-        }
-        if (position == stepLabels.length) {
-            nextButtonText = 'Finalizar';
-        }
-        if (position == stepLabels.length + 1) {
-            this.finalize();
-            return;
-        }
-        this.setState({ nextText: nextButtonText, currentPosition: position, listData: this.getListData(position) });
+    getTotalText() {
+        return 'Total: R$: ' + this.state.total.toFixed(2);
     }
 
     finalize() {
@@ -200,4 +81,218 @@ export default class Main extends Component {
     createSaladText() {
 
     }
+
+    keyExtractor = (item, index) => item.id.toString();
+
+    onItemPress(id, index) {
+
+        let currentPosition = this.state.currentPosition;
+        let selected = this.state.selected;        
+        let selectedStep = selected[currentPosition];
+        let dataStep = SaladData[currentPosition];        
+
+        if (!selectedStep) {
+            selectedStep = Object.assign({}, dataStep, { list: {} });
+        }
+        if (selectedStep.list[id]) {
+            delete selectedStep.list[id]; //remove
+        } else {
+
+            if (selected !== undefined &&
+                selected[currentPosition] !== undefined && 
+                Object.values(selected[currentPosition].list).length === SaladData[currentPosition].amount) {
+    
+                alert('Me desculpa! Você já escolheu a quantidade máxima.');
+                return;
+            }        
+
+            selectedStep.list[id] = dataStep.list[index]; //add
+        }
+
+        selected[currentPosition] = selectedStep;
+        this.setState({ selected: selected });
+    }
+
+    // getSubTitle(item, currentPosition) {
+    //     switch (currentPosition) {
+    //         case StepEnum.PROTEIN:
+    //         this.state.selected[StepEnum.SIZE][item.id];
+    //             return 
+    //             break;        
+    //         default:
+    //             item.subTitle;
+    //             break;
+    //     }
+    // }
+
+    renderItem({ item, index }) {
+
+        let selected = this.state.selected;
+        let currentPosition = this.state.currentPosition;
+        //let subTitle = 
+        let isSelected = selected[currentPosition] !== undefined &&
+            selected[currentPosition].list !== undefined &&
+            selected[currentPosition].list[item.id] !== undefined;
+
+        return (
+            <MyListItem
+                index={index}
+                selected={isSelected}
+                title={item.title}
+                subTitle={}
+                onPressItem={(item, index) => { this.onItemPress(item.id, index) }}
+            />
+        );
+
+    }
+
+    validateBeforeGo(position) {
+
+        let currentPosition = this.state.currentPosition;
+        if (position < currentPosition) {
+            return true;
+        }
+        if (position < 0 || position > SaladData.length) {
+            return false;
+        }
+
+        let selected = this.state.selected;
+        let step = SaladData[currentPosition];        
+
+        let validate = step.validate;
+        if (validate) {
+
+            let validate2 = selected === undefined ||
+                selected[currentPosition] === undefined ||
+                selected[currentPosition].list === undefined;
+            let listSize = Object.values(selected[currentPosition].list).length;
+            validate2 = validate && listSize === 0;
+
+            if (validate2) {
+                alert('Escolha pelo menos um item nesse passo :)');
+                return false;
+            }            
+        }
+
+        return true;
+    }
+
+    onPageChange(position) {
+        if (!this.validateBeforeGo(position)) {
+            return;
+        }
+        let nextButtonText = 'Próximo';
+        if (position === SaladData.length) {
+            nextButtonText = 'Finalizar';
+            //this.finalize();
+        }
+        this.setState({ nextText: nextButtonText, currentPosition: position, listData: SaladData[position].list });
+    }
+
+    render() {
+        return (
+            <SafeAreaView style={styles.safeAreaView}>
+                <StatusBar backgroundColor={Colors.ColorPrimaryDark} barStyle="light-content" />
+                <View style={{ paddingTop: 10, paddingLeft: 10, paddingRight: 10 }}>
+                    <StepIndicator
+                        stepCount={SaladData.length}
+                        customStyles={customStyles}
+                        currentPosition={this.state.currentPosition}
+                        labels={stepLabels}
+                    />
+                </View>
+                <View style={styles.titleContainer}>
+                    {this.getTitleComponent()}
+                    <Text style={styles.totalText}>{this.getTotalText()}</Text>
+                </View>
+                {this.getResult()}
+                <View style={styles.buttonsContainer}>
+                    <View style={styles.navButtons}>
+                        <Button
+                            onPress={() => { this.onPageChange(this.state.currentPosition - 1) }}
+                            title="Anterior"
+                            color="#841584"
+                            accessibilityLabel="Anterior"
+                        />
+                    </View>
+                    <View style={styles.navButtons}>
+                        <Button
+                            onPress={() => { this.onPageChange(this.state.currentPosition + 1) }}
+                            title={this.state.nextText}
+                            color="#841584"
+                            accessibilityLabel="Próximo"
+                        />
+                    </View>
+                </View>
+            </SafeAreaView>
+        )
+    }
+}
+
+const styles = StyleSheet.create({
+    safeAreaView: {
+        backgroundColor: Colors.ColorPrimary,
+        flex: 1,
+        justifyContent: 'space-between'
+    },
+    titleContainer: {
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        borderBottomColor: Colors.ColorAccent,
+        borderBottomWidth: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    totalText: {
+        fontSize: 18,
+        color: Colors.Black
+    },
+    buttonsContainer: {
+        padding: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderTopColor: Colors.ColorAccent,
+        borderTopWidth: 1,
+        alignItems: 'center',
+    },
+    navButtons: {
+        flex: 1,
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    titleText: {
+        fontSize: 25,
+        fontWeight: 'bold',
+        color: Colors.Black
+    },
+    subTitleText: {
+        color: Colors.Gray,
+        fontSize: 13,
+    }
+});
+
+const customStyles = {
+    stepIndicatorSize: 25,
+    currentStepIndicatorSize: 30,
+    separatorStrokeWidth: 2,
+    currentStepStrokeWidth: 3,
+    stepStrokeCurrentColor: Colors.ColorAccent,
+    stepStrokeWidth: 3,
+    stepStrokeFinishedColor: Colors.ColorAccent,
+    stepStrokeUnFinishedColor: '#aaaaaa',
+    separatorFinishedColor: Colors.ColorAccent,
+    separatorUnFinishedColor: '#aaaaaa',
+    stepIndicatorFinishedColor: Colors.ColorAccent,
+    stepIndicatorUnFinishedColor: Colors.ColorPrimary,
+    stepIndicatorCurrentColor: Colors.ColorPrimary,
+    stepIndicatorLabelFontSize: 13,
+    currentStepIndicatorLabelFontSize: 13,
+    stepIndicatorLabelCurrentColor: Colors.ColorAccent,
+    stepIndicatorLabelFinishedColor: Colors.ColorPrimary,
+    stepIndicatorLabelUnFinishedColor: '#aaaaaa',
+    labelColor: Colors.ColorPrimary,
+    labelSize: 0,
+    currentStepLabelColor: Colors.ColorPrimary
 }

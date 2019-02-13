@@ -1,23 +1,24 @@
 import React, { PureComponent } from 'react';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import Colors from './resources/colors';
 
 export default class MyListItem extends PureComponent {
 
     _onPress = () => {
-        this.props.onPressItem(this.props.item);
+        this.props.onPressItem(this.props.item, this.props.index);
     };
 
     render() {
 
-        const backColor = this.props.selected ? '#841584' : 'transparent';
-        const textColor = this.props.selected ? 'white' : 'gray';
-        let subTitle = this.props.item.subTitle ? <Text style={{ color: textColor, fontSize: 13, }}>{this.props.item.subTitle}</Text> : null;
+        const backColor = this.props.selected ? Colors.ColorPrimaryDark : Colors.Transparent;
+        const textColor = this.props.selected ? Colors.ColorPrimary : Colors.Gray;
+        let subTitle = this.props.subTitle ? <Text style={[styles.subTitleText, { color: textColor }]}>{this.props.subTitle}</Text> : null;
 
         return (
             <TouchableOpacity onPress={this._onPress}>
-                <View style={{ backgroundColor: backColor, padding: 20, borderBottomColor: 'gray', borderBottomWidth: 0.5 }}>
-                    <Text style={{ flex: 1, color: textColor, fontWeight: 'bold', fontSize: 20 }}>
-                        {this.props.item.title}
+                <View style={[styles.itemContainer, { backgroundColor: backColor }]}>
+                    <Text style={styles.titleText}>
+                        {this.props.title}
                     </Text>
                     {subTitle}
                 </View>
@@ -25,3 +26,17 @@ export default class MyListItem extends PureComponent {
         );
     }
 }
+
+const styles = StyleSheet.create({
+    titleText: {
+        fontSize: 20,
+    },
+    subTitleText: {        
+        fontSize: 13,
+    },
+    itemContainer: {        
+        padding: 20,
+        borderBottomColor: Colors.Gray,
+        borderBottomWidth: 0.5
+    }
+});
