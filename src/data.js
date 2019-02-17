@@ -5,7 +5,12 @@ function getAdditionalSubTitle(price) {
 
 export default saladData = [
     {
-        step: 0,
+        step: 0,        
+        description: 'Seu Nome',
+        validate: true
+    },
+    {
+        step: 1,
         amount: 1,
         description: 'Tamanho',
         validate: true,
@@ -15,7 +20,7 @@ export default saladData = [
         ]
     },
     {
-        step: 1,
+        step: 2,
         amount: 1,
         description: 'Proteína',
         validate: true,
@@ -29,7 +34,7 @@ export default saladData = [
         ]
     },
     {
-        step: 2,
+        step: 3,
         amount: 4,
         description: 'Ingredientes',
         validate: false,
@@ -58,7 +63,7 @@ export default saladData = [
         ]
     },
     {
-        step: 3,
+        step: 4,
         amount: 1,
         description: 'Molho',
         validate: false,
@@ -71,7 +76,7 @@ export default saladData = [
         ]
     },
     {
-        step: 4,
+        step: 5,
         amount: 1,
         description: 'Grão',
         validate: false,
@@ -82,7 +87,7 @@ export default saladData = [
         ]
     },
     {
-        step: 5,
+        step: 6,
         amount: 2,
         description: 'Sementes',
         validate: false,
@@ -97,7 +102,7 @@ export default saladData = [
         ]
     },
     {
-        step: 6,
+        step: 7,
         amount: 2,
         description: 'Cheiro Verde',
         validate: false,
@@ -110,7 +115,7 @@ export default saladData = [
         ]
     },
     {
-        step: 7,
+        step: 8,
         amount: 7,
         description: 'Adicionais',
         validate: false,
@@ -127,18 +132,19 @@ export default saladData = [
 ];
 
 export const StepEnum = {
-    SIZE: 0,
-    PROTEIN: 1,
-    INGREDIENTS: 2,
-    SAUCE: 3,
-    GRAIN: 4,
-    SEEDS: 5,
-    GREEN_SMELL: 6,
-    ADDITIONAL: 7,
+    NAME: 0,
+    SIZE: 1,
+    PROTEIN: 2,
+    INGREDIENTS: 3,
+    SAUCE: 4,
+    GRAIN: 5,
+    SEEDS: 6,
+    GREEN_SMELL: 7,
+    ADDITIONAL: 8,
 }
 
 export const PortionEnum = {
     SMALL: 0,
-    BIG: 1    
+    BIG: 1
 }
 

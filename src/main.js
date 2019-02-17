@@ -1,24 +1,33 @@
 import React, { Component } from 'react';
-import { StatusBar, Alert, TouchableOpacity, SafeAreaView, FlatList, StyleSheet, Button, Text, View } from 'react-native';
+import { StatusBar, Alert, ScrollView, SafeAreaView, Share, FlatList, StyleSheet, Button, Text, View, Keyboard } from 'react-native';
 import StepIndicator from 'react-native-step-indicator';
 import SaladData, { StepEnum, PortionEnum } from './data';
 import MyListItem from './myListItem';
 import Colors from './resources/colors';
 import Toast from 'react-native-simple-toast';
+import NameScreen from './nameScreen';
+import Storage from './storeData';
 
 const stepLabels = SaladData.map((item) => { return item.description });
 
 export default class Main extends Component {
 
     state = {
-        listData: SaladData[StepEnum.SIZE].list,
-        currentPosition: StepEnum.SIZE,
+        listData: SaladData[StepEnum.NAME].list,
+        currentPosition: StepEnum.NAME,
         selected: [],
         nextText: 'Próximo',
         total: 0
     }
 
     getResult() {
+
+        if (this.state.currentPosition === StepEnum.NAME) {
+            return (
+                <NameScreen />
+            )
+        }
+
         if (this.state.currentPosition !== SaladData.length) {
             return (
                 <View style={{ flex: 1 }}>
@@ -30,10 +39,32 @@ export default class Main extends Component {
                     />
                 </View>
             )
-        } else {
-            return <Text style={{ flex: 1 }}>Anaguas</Text>
         }
 
+        this.finalText = '*' + Storage.nameData.toUpperCase() + '*\n\n';
+        return (
+            <ScrollView contentContainerStyle={{ padding: 20 }}>
+                <View>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.Black, marginBottom: 10 }}>{Storage.nameData.toUpperCase()}</Text>
+                    {this.state.selected.map((item, index) => {
+                        this.finalText = this.finalText + '*' + item.description.toUpperCase() + '*' + '\n';
+                        return (
+                            <View key={index} style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 18, color: Colors.Black }}>
+                                    {item.description}
+                                </Text>
+                                {Object.values(item.list).map((childItem, index) => {
+                                    let subTitle = this.getSubTitle(childItem, item.step);
+                                    subTitle = subTitle ? ' (' + subTitle + ')' : '';
+                                    this.finalText = this.finalText + '\t' + '-' + childItem.title + subTitle + '\n';
+                                    return <Text key={index} style={{ fontSize: 13, color: Colors.Gray }}>{'\t-' + childItem.title + subTitle}</Text>
+                                })}
+                            </View>
+                        )
+                    })}
+                </View>
+            </ScrollView>
+        )
     }
 
     getAmountText() {
@@ -43,22 +74,32 @@ export default class Main extends Component {
 
     getTitleComponent() {
         let currentPosition = this.state.currentPosition;
-        let title = SaladData[this.state.currentPosition].description;
-        if (currentPosition !== SaladData.length) {
-            let amount = this.getAmountText();
-            return (
-                <View>
-                    <Text style={styles.titleText}>{title}</Text>
-                    <Text style={styles.subTitleText}>{amount}</Text>
-                </View>
-            )
-        } else {
+
+        if (currentPosition === StepEnum.NAME) {
+            let title = SaladData[this.state.currentPosition].description;
             return (
                 <View>
                     <Text style={styles.titleText}>{title}</Text>
                 </View>
             )
         }
+
+        if (currentPosition !== SaladData.length) {
+            let amount = this.getAmountText();
+            let title = SaladData[this.state.currentPosition].description;
+            return (
+                <View>
+                    <Text style={styles.titleText}>{title}</Text>
+                    <Text style={styles.subTitleText}>{amount}</Text>
+                </View>
+            )
+        }
+        return (
+            <View>
+                <Text style={styles.titleText}>Finalizar</Text>
+            </View>
+        )
+
     }
 
     getTotalText() {
@@ -82,7 +123,6 @@ export default class Main extends Component {
     }
 
     createSaladText() {
-
     }
 
     keyExtractor = (item, index) => item.id.toString();
@@ -90,24 +130,24 @@ export default class Main extends Component {
     onItemPress(item, index) {
 
         let id = item.id;
-        let price = this.getPrice(item, index);
-        let total = price ? this.state.total + price : this.state.total;
         let currentPosition = this.state.currentPosition;
+        let total = this.state.total;
+        let price = this.getPrice(item, currentPosition);
         let selected = this.state.selected;
         let selectedStep = selected[currentPosition];
         let dataStep = SaladData[currentPosition];
+        let amount = SaladData[currentPosition].amount;
 
-        if (!selectedStep) {
-            selectedStep = Object.assign({}, dataStep, { list: {} });
+        let removeItem = () => {
+            total = price ? total - price : total;
+            delete selectedStep.list[id];
         }
-        if (selectedStep.list[id]) {
-            delete selectedStep.list[id]; //remove
-        } else {
 
+        let addItem = () => {
             if (selected !== undefined &&
                 selected[currentPosition] !== undefined &&
-                Object.values(selected[currentPosition].list).length === SaladData[currentPosition].amount) {
-                
+                Object.values(selected[currentPosition].list).length === amount) {
+
                 Toast.show('Desculpa! Você já escolheu a quantidade máxima.');
                 return;
             }
@@ -115,7 +155,31 @@ export default class Main extends Component {
                 this.selectedPortion = dataStep.list[index];
             }
 
+            total = price ? total + price : total;
             selectedStep.list[id] = dataStep.list[index]; //add
+        }
+
+        if (currentPosition === StepEnum.SIZE) {
+            total = 0;
+        }
+        if (!selectedStep) {
+            selectedStep = Object.assign({}, dataStep, { list: {} });
+        }
+
+        if (amount === 1) {
+            if (price) {
+                total = 0;
+            }
+            if (Object.values(selectedStep.list).length > 0) {
+                selectedStep.list = {};
+            }
+            addItem();
+        } else {
+            if (selectedStep.list[id]) {
+                removeItem();
+            } else {
+                addItem();
+            }
         }
 
         selected[currentPosition] = selectedStep;
@@ -173,11 +237,24 @@ export default class Main extends Component {
     validateBeforeGo(position) {
 
         let currentPosition = this.state.currentPosition;
-        if (position < currentPosition) {
+        if (position === SaladData.length + 1) {
+            return true;
+        }
+        if (position < currentPosition && position >= 0) {
             return true;
         }
         if (position < 0 || position > SaladData.length) {
             return false;
+        }
+
+        if (this.state.currentPosition === StepEnum.NAME) {
+            Keyboard.dismiss();
+            let name = Storage.nameData;
+            if (!name || name.trim().length === 0) {
+                Toast.show('Preencha seu nome.');
+                return false;
+            }
+            return true;
         }
 
         let selected = this.state.selected;
@@ -188,11 +265,10 @@ export default class Main extends Component {
 
             let validate2 = selected === undefined ||
                 selected[currentPosition] === undefined ||
-                selected[currentPosition].list === undefined;
-            let listSize = Object.values(selected[currentPosition].list).length;
-            validate2 = validate && listSize === 0;
+                selected[currentPosition].list === undefined ||
+                Object.values(selected[currentPosition].list).length === 0;
 
-            if (validate2) {                
+            if (validate2) {
                 Toast.show('Escolha pelo menos um item nesse passo :)');
                 return false;
             }
@@ -205,12 +281,28 @@ export default class Main extends Component {
         if (!this.validateBeforeGo(position)) {
             return;
         }
+        if (position === SaladData.length + 1) {
+            this.share('Enviar pedido', this.finalText);
+            return;
+        }
         let nextButtonText = 'Próximo';
         if (position === SaladData.length) {
             nextButtonText = 'Finalizar';
-            //this.finalize();
+            this.setState({ nextText: nextButtonText, currentPosition: position });
+            return;
         }
         this.setState({ nextText: nextButtonText, currentPosition: position, listData: SaladData[position].list });
+    }
+
+    share(title, message) {
+        try {
+            Share.share({
+                title: title,
+                message: message,
+            });            
+        } catch (error) {
+            alert(error.message);
+        }
     }
 
     render() {
@@ -229,7 +321,9 @@ export default class Main extends Component {
                     {this.getTitleComponent()}
                     <Text style={styles.totalText}>{this.getTotalText()}</Text>
                 </View>
-                {this.getResult()}
+                <View style={{ flex: 1 }}>
+                    {this.getResult()}
+                </View>
                 <View style={styles.buttonsContainer}>
                     <View style={styles.navButtons}>
                         <Button
@@ -280,7 +374,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         alignItems: 'center',
     },
-    navButtons: {        
+    navButtons: {
         flex: 1,
         paddingHorizontal: 10
     },
